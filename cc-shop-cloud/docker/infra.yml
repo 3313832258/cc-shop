@@ -1,0 +1,76 @@
+# CC-Shop 基础设施中间件一键启动
+# 用法: docker compose -f docker/infra.yml up -d
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: cc-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: cc_shop
+      TZ: Asia/Shanghai
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+      - ./mysql/conf:/etc/mysql/conf.d
+
+  redis:
+    image: redis:7
+    container_name: cc-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ccshop
+    volumes:
+      - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: cc-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ccshop
+      RABBITMQ_DEFAULT_PASS: ccshop
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: cc-nacos
+    restart: unless-stopped
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      JVM_XMS: "512m"
+      JVM_XMX: "512m"
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos-data:/home/nacos/data
+
+  # Seata 需要自己的存储库(默认 file 模式即可用于简历项目演示)
+  seata:
+    image: seataio/seata-server:1.7.0
+    container_name: cc-seata
+    restart: unless-stopped
+    environment:
+      SEATA_PORT: 8091
+      STORE_MODE: file
+      SEATA_IP: 127.0.0.1
+    ports:
+      - "8091:8091"
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  nacos-data:

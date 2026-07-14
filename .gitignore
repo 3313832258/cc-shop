@@ -1,0 +1,46 @@
+# === Java / Maven ===
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.dump
+hs_err_pid*.log
+
+# === Node / Nuxt ===
+node_modules/
+.nuxt/
+.output/
+dist/
+.nitro/
+.cache/
+*.tsbuildinfo
+
+# === IDE ===
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Environment ===
+.env
+.env.local
+.env.*.local
+
+# === Docker ===
+docker-compose.override.yml
+
+# === Claude ===
+.claude/settings.local.json
+.claude/worktrees/
+
+# === Project specific ===
+cc-shop-cloud/**/target/

@@ -1,0 +1,99 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cc-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+      config:
+        server-addr: ${NACOS_ADDR:127.0.0.1:8848}
+        file-extension: yaml
+    sentinel:
+      transport:
+        dashboard: ${SENTINEL_DASHBOARD:127.0.0.1:8080}
+    gateway:
+      routes:
+        # 用户服务
+        - id: cc-user
+          uri: lb://cc-user
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - StripPrefix=1
+
+        # 商品服务
+        - id: cc-product
+          uri: lb://cc-product
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - StripPrefix=1
+
+        # 购物车服务
+        - id: cc-cart
+          uri: lb://cc-cart
+          predicates:
+            - Path=/api/cart/**
+          filters:
+            - StripPrefix=1
+
+        # 订单服务
+        - id: cc-order
+          uri: lb://cc-order
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - StripPrefix=1
+
+        # 支付服务
+        - id: cc-payment
+          uri: lb://cc-payment
+          predicates:
+            - Path=/api/payment/**
+          filters:
+            - StripPrefix=1
+
+        # 促销服务（优惠券/秒杀）
+        - id: cc-promotion
+          uri: lb://cc-promotion
+          predicates:
+            - Path=/api/promotion/**
+          filters:
+            - StripPrefix=1
+
+        # 物流服务
+        - id: cc-logistics
+          uri: lb://cc-logistics
+          predicates:
+            - Path=/api/logistics/**
+          filters:
+            - StripPrefix=1
+
+# Sentinel 规则（内存模式，生产环境应持久化到 Nacos）
+spring.cloud.sentinel.gateway.api-group:
+  - name: user-api
+    rules:
+      - resource: /api/user/**
+        count: 100
+        grade: 1  # QPS
+        limitApp: default
+  - name: product-api
+    rules:
+      - resource: /api/product/**
+        count: 200
+        grade: 1
+        limitApp: default
+
+logging:
+  level:
+    root: INFO
+    com.ccshop.gateway: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
