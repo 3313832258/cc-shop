@@ -15,4 +15,11 @@ public enum OrderStatus {
 
     private final int code;
     private final String desc;
+
+    public static OrderStatus fromCode(int code) {
+        for (OrderStatus s : values()) {
+            if (s.code == code) return s;
+        }
+        throw new IllegalArgumentException("Unknown OrderStatus: " + code);
+    }
 }

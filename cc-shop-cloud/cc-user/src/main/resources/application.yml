@@ -11,6 +11,8 @@ spring:
       config:
         server-addr: ${NACOS_ADDR:127.0.0.1:8848}
         file-extension: yaml
+        import-check:
+          enabled: false
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/cc_shop?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${MYSQL_USER:root}

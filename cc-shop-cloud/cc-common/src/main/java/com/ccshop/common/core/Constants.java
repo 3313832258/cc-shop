@@ -26,6 +26,11 @@ public final class Constants {
     public static final String CACHE_CATEGORY_TREE = "cc:category:tree";
     public static final String CACHE_BRAND_LIST = "cc:brand:list";
 
+    /** 购物车 Redis Hash Key 前缀 */
+    public static final String CART_PREFIX = "cart:";
+    /** 优惠券剩余数量 Redis Key 前缀 */
+    public static final String COUPON_REMAINING = "coupon:remaining:";
+
     /** 默认分页大小 */
     public static final int DEFAULT_PAGE_SIZE = 20;
 }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
         response.getHeaders().set(HttpHeaders.CONTENT_TYPE, "application/json;charset=UTF-8");
         String body = "{\"code\":401,\"message\":\"" + msg + "\",\"data\":null}";
         return response.writeWith(
-                Mono.just(response.bufferFactory().wrap(body.getBytes())));
+                Mono.just(response.bufferFactory().wrap(body.getBytes(StandardCharsets.UTF_8))));
     }
 
     @Override

@@ -221,6 +221,39 @@ public class ProductService {
         private Map<String, Object> specs;
     }
 
+    /** Feign 调用：获取单个 SKU 详细信息（含商品名） */
+    @Data
+    public static class SkuDetailVO {
+        private Long id;
+        private Long productId;
+        private String productName;
+        private String image;
+        private Map<String, Object> specs;
+        private java.math.BigDecimal price;
+        private java.math.BigDecimal originalPrice;
+        private Integer stock;
+    }
+
+    public SkuDetailVO getSkuDetail(Long skuId) {
+        ProductSku sku = skuMapper.selectById(skuId);
+        if (sku == null) {
+            throw new BusinessException(404, "SKU不存在");
+        }
+        Product product = productMapper.selectById(sku.getProductId());
+        SkuDetailVO vo = new SkuDetailVO();
+        vo.setId(sku.getId());
+        vo.setProductId(sku.getProductId());
+        vo.setProductName(product != null ? product.getName() : "");
+        vo.setImage(sku.getImage());
+        if (StrUtil.isNotBlank(sku.getSpecs())) {
+            vo.setSpecs(JSONUtil.toBean(sku.getSpecs(), Map.class));
+        }
+        vo.setPrice(sku.getPrice());
+        vo.setOriginalPrice(sku.getOriginalPrice());
+        vo.setStock(sku.getStock());
+        return vo;
+    }
+
     @Data
     public static class ProductVO {
         private Long id;

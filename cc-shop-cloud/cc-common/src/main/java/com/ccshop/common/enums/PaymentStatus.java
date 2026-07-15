@@ -13,4 +13,11 @@ public enum PaymentStatus {
 
     private final int code;
     private final String desc;
+
+    public static PaymentStatus fromCode(int code) {
+        for (PaymentStatus s : values()) {
+            if (s.code == code) return s;
+        }
+        throw new IllegalArgumentException("Unknown PaymentStatus: " + code);
+    }
 }

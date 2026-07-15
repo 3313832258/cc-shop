@@ -161,12 +161,24 @@ async function toggleFavorite() {
   } catch {}
 }
 
-function addToCart() {
+async function addToCart() {
   if (!authStore.isLoggedIn) {
     toast.warning('请先登录')
     return
   }
-  toast.info('购物车功能将在 Day 2 实现')
+  if (!selectedSku.value) {
+    toast.warning('请选择规格')
+    return
+  }
+  try {
+    const res = await api.post<any>('/api/trade/cart/add', {
+      skuId: selectedSku.value.id,
+      quantity: 1,
+    })
+    if (res.code === 200) {
+      toast.success('已加入购物车')
+    }
+  } catch {}
 }
 
 function buyNow() {
@@ -174,7 +186,7 @@ function buyNow() {
     toast.warning('请先登录')
     return
   }
-  toast.info('下单功能将在 Day 2 实现')
+  toast.info('下单功能将在阶段 2 实现')
 }
 
 function formatDate(d: string): string {

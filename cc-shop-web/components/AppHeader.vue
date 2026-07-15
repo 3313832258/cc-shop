@@ -27,6 +27,7 @@
           <router-link to="/favorites" class="nav-link">收藏</router-link>
           <router-link to="/message" class="nav-link">消息</router-link>
           <router-link to="/cart" class="nav-link">购物车</router-link>
+          <router-link to="/coupon" class="nav-link">优惠券</router-link>
           <div class="user-dropdown">
             <span class="nav-link user-name">{{ authStore.username }}</span>
             <div class="dropdown-menu">

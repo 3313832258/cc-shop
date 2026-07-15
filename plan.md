@@ -105,9 +105,9 @@ cc-shop-cloud/cc-promotion/
 
 ### 验证清单
 
-- [ ] 购物车：加购 → 改数量 → 删商品 → 勾选 → 合计更新
-- [ ] 优惠券：领券中心显示 4 张券 → 领取 → 我的券出现 → 重复领取提示
-- [ ] Redis 数据：`cart:{userId}` 和 `coupon:{id}:remaining` 值正确
+- [x] 购物车：加购 → 改数量 → 删商品 → 勾选 → 合计更新
+- [x] 优惠券：领券中心显示 4 张券 → 领取 → 我的券出现 → 重复领取提示
+- [x] Redis 数据：`cart:{userId}` 和 `coupon:{id}:remaining` 值正确
 
 ---
 

@@ -16,6 +16,8 @@
         <module>cc-gateway</module>
         <module>cc-user</module>
         <module>cc-product</module>
+        <module>cc-trade</module>
+        <module>cc-promotion</module>
     </modules>
 
     <parent>

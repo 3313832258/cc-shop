@@ -23,6 +23,11 @@ public class ProductController {
         return Result.success(productService.getDetail(id));
     }
 
+    @GetMapping("/sku/{skuId}")
+    public Result<ProductService.SkuDetailVO> getSku(@PathVariable Long skuId) {
+        return Result.success(productService.getSkuDetail(skuId));
+    }
+
     @GetMapping("/list")
     public Result<PageResult<ProductVO>> list(
             @RequestParam(defaultValue = "1") int page,

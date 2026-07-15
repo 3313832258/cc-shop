@@ -15,4 +15,10 @@ public interface ProductSkuMapper extends BaseMapper<ProductSku> {
      */
     @Update("UPDATE product_sku SET stock = stock - #{quantity} WHERE id = #{skuId} AND stock >= #{quantity}")
     int decreaseStock(@Param("skuId") Long skuId, @Param("quantity") int quantity);
+
+    /**
+     * 回滚库存（无条件加回）
+     */
+    @Update("UPDATE product_sku SET stock = stock + #{quantity} WHERE id = #{skuId}")
+    int increaseStock(@Param("skuId") Long skuId, @Param("quantity") int quantity);
 }
