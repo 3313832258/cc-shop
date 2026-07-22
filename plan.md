@@ -325,10 +325,14 @@ cc-shop-cloud/cc-shop-admin/
 - ✅ Gateway 白名单：`/api/user/action` 无需登录即可上报
 - ✅ 页面埋点：商品详情（view/click/cart/favorite）、商品列表（search）、下单（order）、领券（receive）
 
-### 全栈 Docker Compose
+### 全栈 Docker Compose ✅
 
-- 确保 `docker-compose up -d` 一键启动所有服务
-- Sentinel 规则持久化到 Nacos（可选）
+- ✅ 根目录 `docker-compose.yml`：一键启动 11 个容器（4 基础设施 + 6 微服务 + 2 前端）
+- ✅ 后端 Dockerfile：6 个微服务独立 Dockerfile（gateway/user/product/trade/promotion/admin）
+- ✅ 前端 Dockerfile：用户端 + 管理后台（Nuxt 3 SSR 模式）
+- ✅ 环境变量配置：`.env.example` 包含所有必要配置
+- ✅ Nuxt 配置：支持 `NUXT_PUBLIC_API_BASE` 环境变量覆盖
+- Sentinel 规则持久化到 Nacos（可选，暂不实现）
 
 ### 8 项验证清单
 

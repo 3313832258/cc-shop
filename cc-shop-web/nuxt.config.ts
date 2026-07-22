@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   modules: ['@pinia/nuxt', '@nuxt/ui'],
   runtimeConfig: {
     public: {
-      apiBase: 'http://127.0.0.1:8080',
+      // 通过 NUXT_PUBLIC_API_BASE 环境变量覆盖，默认本地开发地址
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://127.0.0.1:8080',
     },
   },
   // Nuxt UI v3 自带 Tailwind CSS v4，无需额外配置
