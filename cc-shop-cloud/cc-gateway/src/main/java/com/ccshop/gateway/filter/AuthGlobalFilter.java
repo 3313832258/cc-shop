@@ -37,6 +37,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/user/auth/sms/login",
             "/api/user/auth/reset-password",
             "/api/user/auth/refresh",
+            "/api/user/action",
             "/api/product/category",
             "/api/product/brand",
             "/api/product/detail",

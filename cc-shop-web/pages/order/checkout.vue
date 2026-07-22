@@ -111,6 +111,7 @@ definePageMeta({ middleware: 'auth' })
 
 const api = useApi()
 const toast = useAppToast()
+const tracker = useTracker()
 
 interface CartItem {
   skuId: number
@@ -192,6 +193,8 @@ async function handleSubmit() {
     const res = await api.post<any>('/api/trade/order/place', body)
     if (res.code === 200) {
       toast.success('下单成功')
+      // 埋点：下单
+      tracker.placeOrder(res.data.id, finalAmount.value)
       navigateTo('/order/pay?orderId=' + res.data.id)
     }
   } catch {

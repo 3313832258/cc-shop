@@ -46,6 +46,7 @@ definePageMeta({ middleware: 'auth' })
 
 const api = useApi()
 const toast = useAppToast()
+const tracker = useTracker()
 
 const tabs = [
   { label: '可领取', value: 0 },
@@ -80,6 +81,8 @@ async function handleReceive(couponId: number) {
     const res = await api.post<any>('/api/promotion/coupon/receive/' + couponId)
     if (res.code === 200) {
       toast.success('领取成功')
+      // 埋点：领取优惠券
+      tracker.receiveCoupon(couponId)
       await Promise.all([loadAvailable(), loadMyCoupons()])
     }
   } catch {}

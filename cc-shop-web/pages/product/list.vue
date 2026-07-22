@@ -57,6 +57,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const api = useApi()
+const tracker = useTracker()
 
 const keyword = computed(() => route.query.keyword as string || '')
 const pageTitle = computed(() => keyword.value ? '搜索结果' : '全部商品')
@@ -143,6 +144,8 @@ async function searchProducts() {
     if (res.code === 200) {
       products.value = res.data || []
       total.value = products.value.length
+      // 埋点：搜索
+      tracker.search(keyword.value, total.value)
     }
   } catch {} finally {
     loading.value = false

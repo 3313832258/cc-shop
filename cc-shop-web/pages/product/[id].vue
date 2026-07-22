@@ -109,6 +109,7 @@ const route = useRoute()
 const api = useApi()
 const toast = useAppToast()
 const authStore = useAuthStore()
+const tracker = useTracker()
 
 const productId = Number(route.params.id)
 const loading = ref(true)
@@ -128,6 +129,8 @@ onMounted(async () => {
       if (res.data.skus && res.data.skus.length > 0) {
         selectedSku.value = res.data.skus[0]
       }
+      // 埋点：浏览商品
+      tracker.viewProduct(productId)
     }
   } catch {}
 
@@ -146,6 +149,8 @@ function onSkuChange(sku: any) {
   if (sku?.image) {
     currentImage.value = sku.image
   }
+  // 埋点：点击SKU
+  tracker.clickProduct(productId, sku?.id)
 }
 
 async function toggleFavorite() {
@@ -162,6 +167,8 @@ async function toggleFavorite() {
       await api.post(`/api/user/favorite/${productId}`)
       isFav.value = true
       toast.success('已收藏')
+      // 埋点：收藏商品
+      tracker.favoriteProduct(productId)
     }
   } catch {}
 }
@@ -182,6 +189,8 @@ async function addToCart() {
     })
     if (res.code === 200) {
       toast.success('已加入购物车')
+      // 埋点：加入购物车
+      tracker.addToCart(productId, selectedSku.value.id, 1)
     }
   } catch {}
 }

@@ -317,11 +317,13 @@ cc-shop-cloud/cc-shop-admin/
 
 ## 阶段 5：完善 + 部署 + 验证
 
-### 行为埋点
+### 行为埋点 ✅
 
-- 前端 `tracker.ts`：采集 view/click/cart/order/favorite/search 事件，批量发送
-- 后端 MQ 批量写入 `user_action_log` 表
-- 已实现：`UserActionEvent.java`（cc-common）、`UserActionLogService.java`（cc-user）
+- ✅ 前端 `tracker.ts`：采集 view/click/cart/order/favorite/search/receive 事件，批量发送（10条或5秒）
+- ✅ 后端 `ActionController`：批量接收事件，发送到 MQ
+- ✅ 后端 `UserActionConsumer`：消费 MQ 消息，落库 `user_action_log` 表
+- ✅ Gateway 白名单：`/api/user/action` 无需登录即可上报
+- ✅ 页面埋点：商品详情（view/click/cart/favorite）、商品列表（search）、下单（order）、领券（receive）
 
 ### 全栈 Docker Compose
 
