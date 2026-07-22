@@ -16,12 +16,28 @@ CREATE TABLE `user` (
   `email` VARCHAR(100) DEFAULT NULL,
   `phone` VARCHAR(20) DEFAULT NULL,
   `avatar` VARCHAR(500) DEFAULT NULL,
+  `role` INT NOT NULL DEFAULT 0 COMMENT '0普通用户/1商家/2管理员',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_username` (`username`),
   UNIQUE KEY `uk_phone` (`phone`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+
+CREATE TABLE `login_log` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT DEFAULT NULL COMMENT '用户ID（失败时可能为空）',
+  `username` VARCHAR(50) DEFAULT NULL COMMENT '尝试登录的用户名',
+  `login_type` VARCHAR(20) NOT NULL COMMENT 'password/sms/admin',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0失败/1成功',
+  `fail_reason` VARCHAR(100) DEFAULT NULL COMMENT '失败原因',
+  `ip` VARCHAR(50) DEFAULT NULL,
+  `user_agent` VARCHAR(500) DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='登录日志';
 
 CREATE TABLE `address` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -102,6 +118,7 @@ CREATE TABLE `product` (
   `description` TEXT,
   `brand_id` BIGINT DEFAULT NULL,
   `category_id` BIGINT NOT NULL,
+  `merchant_id` BIGINT DEFAULT NULL COMMENT '商家ID，NULL表示管理员创建',
   `images` JSON COMMENT '商品主图列表',
   `status` INT NOT NULL DEFAULT 0 COMMENT '0下架/1上架/2停售',
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -109,6 +126,7 @@ CREATE TABLE `product` (
   PRIMARY KEY (`id`),
   KEY `idx_category` (`category_id`),
   KEY `idx_brand` (`brand_id`),
+  KEY `idx_merchant` (`merchant_id`),
   FULLTEXT KEY `ft_name_desc` (`name`, `description`) WITH PARSER ngram
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品主表';
 
@@ -274,6 +292,27 @@ CREATE TABLE `user_coupon` (
   PRIMARY KEY (`id`),
   KEY `idx_user_status` (`user_id`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户优惠券';
+
+-- ==================== 操作日志 ====================
+
+CREATE TABLE `operation_log` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `operator_id` BIGINT DEFAULT NULL COMMENT '操作人ID',
+  `operator_name` VARCHAR(50) DEFAULT NULL COMMENT '操作人用户名',
+  `operation_type` VARCHAR(20) NOT NULL COMMENT 'CREATE/UPDATE/DELETE/APPROVE/REJECT',
+  `module` VARCHAR(20) NOT NULL COMMENT 'product/order/aftersale/coupon',
+  `description` VARCHAR(200) DEFAULT NULL COMMENT '操作描述',
+  `target_id` BIGINT DEFAULT NULL COMMENT '操作目标ID',
+  `request_params` TEXT COMMENT '请求参数JSON',
+  `result` VARCHAR(10) NOT NULL DEFAULT 'SUCCESS' COMMENT 'SUCCESS/FAIL',
+  `error_message` VARCHAR(500) DEFAULT NULL,
+  `ip` VARCHAR(50) DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_operator` (`operator_id`),
+  KEY `idx_module_target` (`module`, `target_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志';
 
 -- ==================== 物流域 ====================
 

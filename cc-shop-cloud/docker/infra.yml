@@ -1,5 +1,13 @@
 # CC-Shop 基础设施中间件一键启动
 # 用法: docker compose -f docker/infra.yml up -d
+#
+# 生产环境部署前必须修改以下密码（通过环境变量或 .env 文件）：
+#   MYSQL_ROOT_PASSWORD, MYSQL_APP_PASSWORD
+#   REDIS_PASSWORD
+#   RABBITMQ_PASSWORD
+#   NACOS_DB_PASSWORD
+#   JWT_SECRET
+#
 version: "3.8"
 
 services:
@@ -8,12 +16,20 @@ services:
     container_name: cc-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Root@2026!}
       MYSQL_DATABASE: cc_shop
+      MYSQL_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
       TZ: Asia/Shanghai
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --init-connect='SET NAMES utf8mb4;'
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT:-3307}:3306"
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql/init:/docker-entrypoint-initdb.d
@@ -25,7 +41,7 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --requirepass ccshop
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CcShop@2026!}
     volumes:
       - redis-data:/data
 
@@ -34,8 +50,8 @@ services:
     container_name: cc-rabbitmq
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: ccshop
-      RABBITMQ_DEFAULT_PASS: ccshop
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ccshop}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-CcShop@2026!}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -46,6 +62,8 @@ services:
     image: nacos/nacos-server:v2.3.2
     container_name: cc-nacos
     restart: unless-stopped
+    depends_on:
+      - mysql
     environment:
       MODE: standalone
       PREFER_HOST_MODE: hostname
@@ -53,9 +71,9 @@ services:
       MYSQL_SERVICE_HOST: mysql
       MYSQL_SERVICE_PORT: "3306"
       MYSQL_SERVICE_DB_NAME: nacos
-      MYSQL_SERVICE_USER: root
-      MYSQL_SERVICE_PASSWORD: root
-      MYSQL_SERVICE_DB_PARAM: characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true
+      MYSQL_SERVICE_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-CcShop@2026!}
+      MYSQL_SERVICE_DB_PARAM: "characterEncoding=utf8&connectTimeout=10000&socketTimeout=30000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true"
       JVM_XMS: "512m"
       JVM_XMX: "512m"
     ports:

@@ -1,30 +1,19 @@
 <template>
-  <div class="coupon-page container">
-    <h2 class="page-title">优惠券中心</h2>
+  <div class="max-w-7xl mx-auto px-5">
+    <h2 class="text-xl font-bold text-default mb-6">优惠券中心</h2>
 
-    <div class="tabs">
-      <button
-        :class="['tab', { active: activeTab === 'available' }]"
-        @click="activeTab = 'available'"
-      >
-        可领取
-      </button>
-      <button
-        :class="['tab', { active: activeTab === 'my' }]"
-        @click="activeTab = 'my'"
-      >
-        我的优惠券
-      </button>
+    <UTabs v-model="activeTab" :items="tabs" class="mb-6" />
+
+    <div v-if="loading" class="flex justify-center py-10">
+      <UIcon name="i-lucide-loader-2" class="animate-spin text-primary" size="24" />
     </div>
 
-    <div v-if="loading" class="loading">加载中...</div>
-
-    <template v-else-if="activeTab === 'available'">
-      <div v-if="!availableCoupons.length" class="empty-state">
-        <span style="font-size:48px">🎫</span>
-        <p>暂无可领取的优惠券</p>
+    <template v-else-if="activeTab === 0">
+      <div v-if="!availableCoupons.length" class="flex flex-col items-center justify-center py-16">
+        <span class="text-5xl mb-4">🎫</span>
+        <p class="text-dimmed">暂无可领取的优惠券</p>
       </div>
-      <div v-else class="coupon-grid grid-2">
+      <div v-else class="grid grid-cols-2 gap-4">
         <CouponCard
           v-for="c in availableCoupons"
           :key="c.id"
@@ -36,11 +25,11 @@
     </template>
 
     <template v-else>
-      <div v-if="!myCoupons.length" class="empty-state">
-        <span style="font-size:48px">🎟️</span>
-        <p>还没有优惠券，去领取吧</p>
+      <div v-if="!myCoupons.length" class="flex flex-col items-center justify-center py-16">
+        <span class="text-5xl mb-4">🎟️</span>
+        <p class="text-dimmed">还没有优惠券，去领取吧</p>
       </div>
-      <div v-else class="coupon-grid grid-2">
+      <div v-else class="grid grid-cols-2 gap-4">
         <CouponCard
           v-for="c in myCoupons"
           :key="c.id"
@@ -56,9 +45,14 @@
 definePageMeta({ middleware: 'auth' })
 
 const api = useApi()
-const toast = useToast()
+const toast = useAppToast()
 
-const activeTab = ref<'available' | 'my'>('available')
+const tabs = [
+  { label: '可领取', value: 0 },
+  { label: '我的优惠券', value: 1 },
+]
+
+const activeTab = ref(0)
 const availableCoupons = ref<any[]>([])
 const myCoupons = ref<any[]>([])
 const loading = ref(false)
@@ -97,45 +91,3 @@ onMounted(async () => {
   loading.value = false
 })
 </script>
-
-<style scoped>
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 24px;
-}
-
-.tab {
-  padding: 10px 24px;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.tab:hover {
-  color: var(--text);
-}
-
-.tab.active {
-  color: var(--primary);
-  border-bottom-color: var(--primary);
-}
-
-.coupon-grid {
-  gap: 16px;
-}
-</style>

@@ -17,4 +17,6 @@ public class RegisterRequest {
 
     private String phone;
     private String email;
+    private String captchaId;
+    private String captchaAnswer;
 }

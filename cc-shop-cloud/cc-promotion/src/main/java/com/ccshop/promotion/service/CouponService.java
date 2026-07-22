@@ -14,6 +14,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ccshop.common.enums.CouponStatus;
+import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +30,7 @@ public class CouponService {
     private final UserCouponMapper userCouponMapper;
     private final StringRedisTemplate redisTemplate;
 
-    public List<CouponVO> getAvailable() {
+    public List<CouponVO> getAvailable(Long userId) {
         LocalDateTime now = LocalDateTime.now();
         LambdaQueryWrapper<Coupon> qw = new LambdaQueryWrapper<Coupon>()
                 .gt(Coupon::getRemainingCount, 0)
@@ -36,7 +40,18 @@ public class CouponService {
         List<Coupon> list = couponMapper.selectList(qw);
         List<CouponVO> vos = new ArrayList<>();
         for (Coupon c : list) {
-            vos.add(toCouponVO(c));
+            CouponVO vo = toCouponVO(c);
+            // 查询用户是否已领取该优惠券
+            if (userId != null) {
+                Long count = userCouponMapper.selectCount(
+                        new LambdaQueryWrapper<UserCoupon>()
+                                .eq(UserCoupon::getUserId, userId)
+                                .eq(UserCoupon::getCouponId, c.getId()));
+                vo.setReceived(count > 0);
+            } else {
+                vo.setReceived(false);
+            }
+            vos.add(vo);
         }
         return vos;
     }
@@ -137,5 +152,59 @@ public class CouponService {
         vo.setTotalCount(c.getTotalCount());
         vo.setRemainingCount(c.getRemainingCount());
         return vo;
+    }
+
+    /** 核销优惠券（MQ消费者调用） */
+    @Transactional
+    public void useCoupon(Long userId, Long userCouponId, Long orderId) {
+        UserCoupon uc = userCouponMapper.selectById(userCouponId);
+        if (uc == null || !uc.getUserId().equals(userId)) {
+            throw new BusinessException(400, "优惠券不存在");
+        }
+        if (uc.getStatus() != CouponStatus.AVAILABLE.getCode()) {
+            throw new BusinessException(400, "优惠券不可用");
+        }
+        uc.setStatus(CouponStatus.USED.getCode());
+        uc.setUsedOrderId(orderId);
+        userCouponMapper.updateById(uc);
+    }
+
+    /** 恢复优惠券（超时取消时调用） */
+    @Transactional
+    public void restoreCoupon(Long userId, Long userCouponId) {
+        UserCoupon uc = userCouponMapper.selectById(userCouponId);
+        if (uc != null && uc.getUserId().equals(userId) && uc.getStatus() == CouponStatus.USED.getCode()) {
+            uc.setStatus(CouponStatus.AVAILABLE.getCode());
+            uc.setUsedOrderId(null);
+            userCouponMapper.updateById(uc);
+        }
+    }
+
+    /** 查询券详情（供交易服务 Feign 调用） */
+    public CouponInfoDTO getCouponDetail(Long userCouponId) {
+        UserCoupon uc = userCouponMapper.selectById(userCouponId);
+        if (uc == null) {
+            throw new BusinessException(404, "优惠券不存在");
+        }
+        Coupon coupon = couponMapper.selectById(uc.getCouponId());
+        if (coupon == null) {
+            throw new BusinessException(404, "优惠券模板不存在");
+        }
+        CouponInfoDTO dto = new CouponInfoDTO();
+        dto.setUserCouponId(uc.getId());
+        dto.setUserId(uc.getUserId());
+        dto.setType(coupon.getType());
+        dto.setValue(coupon.getValue());
+        dto.setMinOrderAmount(coupon.getMinOrderAmount());
+        return dto;
+    }
+
+    @Data
+    public static class CouponInfoDTO {
+        private Long userCouponId;
+        private Long userId;
+        private Integer type;
+        private BigDecimal value;
+        private BigDecimal minOrderAmount;
     }
 }

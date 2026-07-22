@@ -17,6 +17,7 @@ public class Product {
     private String description;
     private Long brandId;
     private Long categoryId;
+    private Long merchantId;
     private String images; // JSON 字符串
     private Integer status;
     private LocalDateTime createdAt;

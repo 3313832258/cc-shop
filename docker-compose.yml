@@ -1,0 +1,240 @@
+# CC-Shop 全栈部署
+# 用法: docker compose up -d
+#
+# 前置条件：
+# 1. 复制 .env.example 为 .env 并修改密码
+# 2. 构建后端: cd cc-shop-cloud && mvn clean package -DskipTests
+# 3. 构建前端: cd cc-shop-web && npm run build
+
+version: "3.8"
+
+services:
+  # ==================== 基础设施 ====================
+  mysql:
+    image: mysql:8.0
+    container_name: cc-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Root@2026!}
+      MYSQL_DATABASE: cc_shop
+      MYSQL_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./cc-shop-cloud/docker/mysql/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: cc-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CcShop@2026!}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-CcShop@2026!}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: cc-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ccshop}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  nacos:
+    image: nacos/nacos-server:v2.3.2
+    container_name: cc-nacos
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MODE: standalone
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: "3306"
+      MYSQL_SERVICE_DB_NAME: nacos
+      MYSQL_SERVICE_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-CcShop@2026!}
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    volumes:
+      - nacos-data:/home/nacos/data
+
+  # ==================== 后端服务 ====================
+  cc-gateway:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.gateway
+    container_name: cc-gateway
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - redis
+    environment:
+      NACOS_ADDR: nacos:8848
+      JWT_SECRET: ${JWT_SECRET:-ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+    ports:
+      - "8080:8080"
+
+  cc-user:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.user
+    container_name: cc-user
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+      JWT_SECRET: ${JWT_SECRET:-ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026}
+
+  cc-product:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.product
+    container_name: cc-product
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+
+  cc-trade:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.trade
+    container_name: cc-trade
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+
+  cc-promotion:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.promotion
+    container_name: cc-promotion
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - mysql
+      - redis
+      - rabbitmq
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+
+  cc-admin:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.admin
+    container_name: cc-admin
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - mysql
+    environment:
+      NACOS_ADDR: nacos:8848
+      MYSQL_HOST: mysql
+      MYSQL_PORT: "3306"
+      MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+
+  # ==================== 前端 ====================
+  cc-shop-web:
+    build:
+      context: ./cc-shop-web
+      dockerfile: Dockerfile
+    container_name: cc-shop-web
+    restart: unless-stopped
+    depends_on:
+      - cc-gateway
+    environment:
+      NUXT_PUBLIC_API_BASE: http://cc-gateway:8080
+    ports:
+      - "3000:3000"
+
+  cc-shop-admin-web:
+    build:
+      context: ./cc-shop-admin
+      dockerfile: Dockerfile
+    container_name: cc-shop-admin-web
+    restart: unless-stopped
+    depends_on:
+      - cc-gateway
+    environment:
+      NUXT_PUBLIC_API_BASE: http://cc-gateway:8080
+    ports:
+      - "3001:3000"
+
+volumes:
+  mysql-data:
+  redis-data:
+  rabbitmq-data:
+  nacos-data:

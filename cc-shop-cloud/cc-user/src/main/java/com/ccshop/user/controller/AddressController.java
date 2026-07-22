@@ -19,6 +19,11 @@ public class AddressController {
 
     private final AddressService addressService;
 
+    @GetMapping("/{id}")
+    public Result<Address> getById(@PathVariable Long id) {
+        return Result.success(addressService.getById(id));
+    }
+
     @GetMapping
     public Result<List<Address>> list() {
         return Result.success(addressService.list());

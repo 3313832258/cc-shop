@@ -1,22 +1,9 @@
 <template>
-  <div class="app-layout">
+  <div class="min-h-screen flex flex-col">
     <AppHeader />
-    <main class="main-content">
+    <main class="flex-1 py-6">
       <slot />
     </main>
     <AppFooter />
   </div>
 </template>
-
-<style scoped>
-.app-layout {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-content {
-  flex: 1;
-  padding: 24px 0;
-}
-</style>

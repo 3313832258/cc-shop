@@ -1,16 +1,23 @@
 <template>
-  <router-link :to="`/product/${product.id}`" class="product-card card">
-    <div class="product-image">
-      <img :src="product.image || 'https://picsum.photos/seed/placeholder/400/400'" :alt="product.name" loading="lazy" />
+  <NuxtLink :to="`/product/${product.id}`" class="group block bg-elevated rounded-lg shadow-sm overflow-hidden hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
+    <div class="aspect-square bg-muted overflow-hidden">
+      <img
+        :src="product.image || 'https://picsum.photos/seed/placeholder/400/400'"
+        :alt="product.name"
+        loading="lazy"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
     </div>
-    <div class="product-info">
-      <h3 class="product-name">{{ product.name }}</h3>
-      <div class="product-meta">
-        <span class="product-price">¥{{ formatPrice(product.price) }}</span>
-        <span class="product-stock text-xs text-secondary">库存 {{ product.stock }}</span>
+    <div class="p-4">
+      <h3 class="text-sm font-medium leading-snug line-clamp-2 text-default mb-2">
+        {{ product.name }}
+      </h3>
+      <div class="flex justify-between items-baseline">
+        <span class="text-lg font-bold text-warning">¥{{ formatPrice(product.price) }}</span>
+        <span class="text-xs text-dimmed">库存 {{ product.stock }}</span>
       </div>
     </div>
-  </router-link>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
@@ -29,64 +36,3 @@ function formatPrice(price?: number): string {
   return Number(price).toFixed(2)
 }
 </script>
-
-<style scoped>
-.product-card {
-  display: block;
-  padding: 0;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-decoration: none;
-  color: var(--text);
-}
-
-.product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-.product-image {
-  aspect-ratio: 1;
-  background: var(--bg);
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s;
-}
-
-.product-card:hover .product-image img {
-  transform: scale(1.05);
-}
-
-.product-info {
-  padding: 16px;
-}
-
-.product-name {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 8px;
-  color: var(--text);
-}
-
-.product-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.product-price {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--accent);
-}
-</style>

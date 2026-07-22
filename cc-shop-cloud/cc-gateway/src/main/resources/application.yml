@@ -50,6 +50,14 @@ spring:
           filters:
             - StripPrefix=1
 
+        # 管理后台
+        - id: cc-admin
+          uri: lb://cc-admin
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - StripPrefix=1
+
 # Sentinel 规则（内存模式，生产环境应持久化到 Nacos）
 spring.cloud.sentinel.gateway.api-group:
   - name: user-api
@@ -57,6 +65,18 @@ spring.cloud.sentinel.gateway.api-group:
       - resource: /api/user/**
         count: 100
         grade: 1  # QPS
+        limitApp: default
+      # 登录接口限流：5次/分钟/IP
+      - resource: /api/user/auth/login
+        count: 5
+        grade: 1
+        intervalSec: 60
+        limitApp: default
+      # 注册接口限流：3次/分钟/IP
+      - resource: /api/user/auth/register
+        count: 3
+        grade: 1
+        intervalSec: 60
         limitApp: default
   - name: product-api
     rules:
@@ -70,9 +90,32 @@ spring.cloud.sentinel.gateway.api-group:
         count: 100
         grade: 1
         limitApp: default
+      # 下单接口限流：10次/分钟/用户
+      - resource: /api/trade/order/place
+        count: 10
+        grade: 1
+        intervalSec: 60
+        limitApp: default
+      # 支付接口限流：5次/分钟/用户
+      - resource: /api/trade/payment/pay
+        count: 5
+        grade: 1
+        intervalSec: 60
+        limitApp: default
   - name: promotion-api
     rules:
       - resource: /api/promotion/**
+        count: 100
+        grade: 1
+        limitApp: default
+      # 秒杀接口限流：100次/秒（热点商品）
+      - resource: /api/promotion/flash/sale
+        count: 100
+        grade: 1
+        limitApp: default
+  - name: admin-api
+    rules:
+      - resource: /api/admin/**
         count: 100
         grade: 1
         limitApp: default

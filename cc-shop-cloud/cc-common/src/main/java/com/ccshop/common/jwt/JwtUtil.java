@@ -15,25 +15,40 @@ import java.util.Date;
 public class JwtUtil {
 
     /**
-     * 密钥（生产环境应从配置中心读取，此处为简历项目演示用固定值）。
+     * 密钥，优先从环境变量 JWT_SECRET 读取，其次从系统属性，最后使用默认值（仅限开发环境）。
      * 长度需 >= 256 bit。
      */
-    private static final String SECRET = "ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026";
+    private static final String SECRET = System.getenv("JWT_SECRET") != null
+            ? System.getenv("JWT_SECRET")
+            : System.getProperty("jwt.secret", "ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026");
 
-    /** 有效期 7 天 */
-    private static final long EXPIRATION_MS = 7L * 24 * 60 * 60 * 1000;
+    /** AccessToken 有效期 2 小时 */
+    public static final long ACCESS_EXPIRATION_MS = 2L * 60 * 60 * 1000;
+    /** RefreshToken 有效期 7 天 */
+    public static final long REFRESH_EXPIRATION_MS = 7L * 24 * 60 * 60 * 1000;
 
     private static SecretKey key() {
         return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
 
-    public static String generate(Long userId, String username) {
+    /**
+     * 生成 AccessToken（短期，2h）
+     */
+    public static String generate(Long userId, String username, int role) {
+        return generate(userId, username, role, ACCESS_EXPIRATION_MS);
+    }
+
+    /**
+     * 生成指定有效期的 Token
+     */
+    public static String generate(Long userId, String username, int role, long expirationMs) {
         Date now = new Date();
         return Jwts.builder()
                 .claim(Constants.CLAIM_USER_ID, userId)
                 .claim(Constants.CLAIM_USERNAME, username)
+                .claim(Constants.CLAIM_ROLE, role)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + EXPIRATION_MS))
+                .setExpiration(new Date(now.getTime() + expirationMs))
                 .signWith(key())
                 .compact();
     }

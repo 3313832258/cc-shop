@@ -15,10 +15,14 @@ public final class Constants {
     public static final String CLAIM_USER_ID = "uid";
     /** JWT Claim: 用户名 */
     public static final String CLAIM_USERNAME = "username";
+    /** JWT Claim: 角色 */
+    public static final String CLAIM_ROLE = "role";
     /** Feign 透传 Header: 用户ID */
     public static final String HEADER_USER_ID = "X-User-Id";
     /** Feign 透传 Header: 用户名 */
     public static final String HEADER_USERNAME = "X-Username";
+    /** Feign 透传 Header: 角色 */
+    public static final String HEADER_ROLE = "X-User-Role";
 
     /** Redis Key 前缀 */
     public static final String CACHE_PRODUCT_DETAIL = "cc:product:detail:";

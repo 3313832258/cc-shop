@@ -18,6 +18,7 @@
         <module>cc-product</module>
         <module>cc-trade</module>
         <module>cc-promotion</module>
+        <module>cc-shop-admin</module>
     </modules>
 
     <parent>

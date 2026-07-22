@@ -17,4 +17,6 @@ public class CouponVO {
     private LocalDateTime endTime;
     private Integer totalCount;
     private Integer remainingCount;
+    /** 当前用户是否已领取 */
+    private Boolean received;
 }

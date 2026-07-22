@@ -35,20 +35,23 @@ public class ProductService {
     private final ProductReviewMapper reviewMapper;
     private final CategoryMapper categoryMapper;
     private final StringRedisTemplate redisTemplate;
+    private final CacheFallbackService cacheFallbackService;
 
     /** 缓存 30 分钟 */
     private static final long CACHE_TTL_MINUTES = 30;
 
     /** 商品详情（含 SKU 列表 + 规格参数） */
     public ProductDetailVO getDetail(Long productId) {
-        // 1. 查 Redis
         String cacheKey = Constants.CACHE_PRODUCT_DETAIL + productId;
-        String cached = redisTemplate.opsForValue().get(cacheKey);
-        if (cached != null) {
-            return JSONUtil.toBean(cached, ProductDetailVO.class);
-        }
 
-        // 2. 查 DB
+        return cacheFallbackService.getWithFallback(cacheKey, CACHE_TTL_MINUTES, ProductDetailVO.class,
+                () -> loadProductDetailFromDB(productId));
+    }
+
+    /**
+     * 从数据库加载商品详情
+     */
+    private ProductDetailVO loadProductDetailFromDB(Long productId) {
         Product product = productMapper.selectById(productId);
         if (product == null) {
             throw new BusinessException(404, "商品不存在");
@@ -115,9 +118,6 @@ public class ProductService {
         rqw.eq(ProductReview::getProductId, productId).orderByDesc(ProductReview::getCreatedAt).last("LIMIT 10");
         vo.setReviews(reviewMapper.selectList(rqw));
 
-        // 写入缓存
-        redisTemplate.opsForValue().set(cacheKey, JSONUtil.toJsonStr(vo), CACHE_TTL_MINUTES, TimeUnit.MINUTES);
-
         return vo;
     }
 
@@ -166,6 +166,40 @@ public class ProductService {
 
         Long total = productMapper.selectCount(qw);
         return new PageResult<>(records, total);
+    }
+
+    /** 根据 ID 列表批量查询商品（用于收藏等场景） */
+    public List<ProductVO> batchByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        List<Product> products = productMapper.selectBatchIds(ids);
+        Map<Long, Product> productMap = products.stream()
+                .collect(Collectors.toMap(Product::getId, p -> p));
+
+        return ids.stream().map(id -> {
+            Product p = productMap.get(id);
+            if (p == null) return null;
+            ProductVO vo = new ProductVO();
+            vo.setId(p.getId());
+            vo.setName(p.getName());
+            vo.setDescription(p.getDescription());
+            vo.setCategoryId(p.getCategoryId());
+            vo.setBrandId(p.getBrandId());
+            if (StrUtil.isNotBlank(p.getImages())) {
+                List<String> imgs = JSONUtil.toList(JSONUtil.parseArray(p.getImages()), String.class);
+                vo.setImage(imgs.isEmpty() ? null : imgs.get(0));
+            }
+            // SKU 最低价格
+            LambdaQueryWrapper<ProductSku> sqw = new LambdaQueryWrapper<>();
+            sqw.eq(ProductSku::getProductId, p.getId()).last("ORDER BY price ASC LIMIT 1");
+            ProductSku cheapest = skuMapper.selectOne(sqw);
+            if (cheapest != null) vo.setPrice(cheapest.getPrice());
+            // 总库存
+            LambdaQueryWrapper<ProductSku> stkq = new LambdaQueryWrapper<>();
+            stkq.eq(ProductSku::getProductId, p.getId());
+            List<ProductSku> allSkus = skuMapper.selectList(stkq);
+            vo.setStock(allSkus.stream().mapToInt(ProductSku::getStock).sum());
+            return vo;
+        }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     /** 搜索（中文 FULLTEXT ngram） */

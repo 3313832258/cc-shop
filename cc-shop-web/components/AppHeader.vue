@@ -1,45 +1,45 @@
 <template>
-  <header class="app-header">
-    <div class="container header-inner">
+  <header class="bg-elevated border-b border-default sticky top-0 z-50 shadow-sm">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center gap-6">
       <!-- Logo -->
-      <router-link to="/" class="logo">
-        <span class="logo-text">CC<span class="logo-accent">Shop</span></span>
-      </router-link>
+      <NuxtLink to="/" class="flex items-center gap-1 shrink-0">
+        <span class="text-xl font-bold tracking-tight text-default">CC<span class="text-primary">Shop</span></span>
+      </NuxtLink>
 
       <!-- 搜索 -->
-      <div class="search-bar">
-        <input
+      <div class="flex-1 flex gap-2 max-w-lg">
+        <UInput
           v-model="searchQuery"
-          type="text"
           placeholder="搜索商品..."
-          class="form-input search-input"
+          icon="i-lucide-search"
+          class="flex-1"
           @keyup.enter="doSearch"
         />
-        <button class="btn btn-primary search-btn" @click="doSearch">搜索</button>
+        <UButton color="primary" @click="doSearch">搜索</UButton>
       </div>
 
       <!-- 导航 -->
-      <nav class="header-nav">
-        <router-link to="/" class="nav-link">首页</router-link>
-        <router-link to="/product/list" class="nav-link">商品</router-link>
+      <nav class="flex items-center gap-4">
+        <NuxtLink to="/" class="text-sm font-medium text-muted hover:text-primary transition-colors">首页</NuxtLink>
+        <NuxtLink to="/product/list" class="text-sm font-medium text-muted hover:text-primary transition-colors">商品</NuxtLink>
+        <NuxtLink to="/promotion/flash" class="text-sm font-medium text-error hover:text-error/80 transition-colors">⚡秒杀</NuxtLink>
 
-        <template v-if="authStore.isLoggedIn">
-          <router-link to="/favorites" class="nav-link">收藏</router-link>
-          <router-link to="/message" class="nav-link">消息</router-link>
-          <router-link to="/cart" class="nav-link">购物车</router-link>
-          <router-link to="/coupon" class="nav-link">优惠券</router-link>
-          <div class="user-dropdown">
-            <span class="nav-link user-name">{{ authStore.username }}</span>
-            <div class="dropdown-menu">
-              <router-link to="/user/profile">个人信息</router-link>
-              <router-link to="/order/list">我的订单</router-link>
-              <button class="dropdown-item" @click="logout">退出登录</button>
-            </div>
-          </div>
+        <template v-if="isLoggedIn">
+          <NuxtLink to="/favorites" class="text-sm font-medium text-muted hover:text-primary transition-colors">收藏</NuxtLink>
+          <NuxtLink to="/message" class="text-sm font-medium text-muted hover:text-primary transition-colors">消息</NuxtLink>
+          <NuxtLink to="/cart" class="text-sm font-medium text-muted hover:text-primary transition-colors">购物车</NuxtLink>
+          <NuxtLink to="/coupon" class="text-sm font-medium text-muted hover:text-primary transition-colors">优惠券</NuxtLink>
+
+          <UDropdownMenu :items="userMenuItems">
+            <UButton variant="ghost" trailing-icon="i-lucide-chevron-down" class="text-sm font-medium">
+              {{ authStore.username }}
+            </UButton>
+          </UDropdownMenu>
         </template>
+
         <template v-else>
-          <router-link to="/user/login" class="btn btn-sm btn-outline">登录</router-link>
-          <router-link to="/user/register" class="btn btn-sm btn-primary">注册</router-link>
+          <UButton to="/user/login" variant="outline" size="sm">登录</UButton>
+          <UButton to="/user/register" size="sm">注册</UButton>
         </template>
       </nav>
     </div>
@@ -48,127 +48,30 @@
 
 <script setup lang="ts">
 const authStore = useAuthStore()
-const router = useRouter()
+
+// 确保从 localStorage 恢复状态
+if (import.meta.client && !authStore.isLoggedIn) {
+  authStore.initFromStorage()
+}
+
+const isLoggedIn = computed(() => authStore.isLoggedIn)
 
 const searchQuery = ref('')
 
 function doSearch() {
   if (searchQuery.value.trim()) {
-    router.push({ path: '/product/list', query: { keyword: searchQuery.value } })
+    navigateTo({ path: '/product/list', query: { keyword: searchQuery.value } })
   }
 }
 
 function logout() {
   authStore.logout()
-  router.push('/user/login')
+  navigateTo('/')
 }
+
+const userMenuItems = [
+  { label: '个人信息', to: '/user/profile' },
+  { label: '我的订单', to: '/order/list' },
+  { label: '退出登录', onClick: logout },
+]
 </script>
-
-<style scoped>
-.app-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-}
-
-.header-inner {
-  display: flex;
-  align-items: center;
-  height: 64px;
-  gap: 24px;
-}
-
-.logo-text {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.5px;
-}
-
-.logo-accent {
-  color: var(--primary);
-}
-
-.search-bar {
-  flex: 1;
-  display: flex;
-  gap: 8px;
-  max-width: 480px;
-}
-
-.search-input {
-  flex: 1;
-}
-
-.search-btn {
-  white-space: nowrap;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.nav-link {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
-  transition: color 0.2s;
-  cursor: pointer;
-}
-
-.nav-link:hover, .nav-link.router-link-active {
-  color: var(--primary);
-}
-
-.user-dropdown {
-  position: relative;
-}
-
-.user-name {
-  display: inline-block;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  min-width: 140px;
-  display: none;
-  overflow: hidden;
-  z-index: 200;
-}
-
-.user-dropdown:hover .dropdown-menu {
-  display: block;
-}
-
-.dropdown-menu a,
-.dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  font-size: 14px;
-  color: var(--text);
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-sans);
-}
-
-.dropdown-menu a:hover,
-.dropdown-item:hover {
-  background: var(--bg);
-  color: var(--primary);
-}
-</style>

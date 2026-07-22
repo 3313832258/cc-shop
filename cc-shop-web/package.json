@@ -7,14 +7,26 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "generate": "nuxt generate",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@nuxt/ui": "^4.10.0",
     "@pinia/nuxt": "^0.11.2",
     "dayjs": "^1.11.10",
     "nuxt": "^4.4.8",
     "pinia": "^3.0.4",
     "vue": "^3.3.0",
     "vue-router": "^4.2.0"
+  },
+  "devDependencies": {
+    "@nuxt/test-utils": "^4.0.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/test-utils": "^2.4.11",
+    "happy-dom": "^20.10.6",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.10"
   }
 }

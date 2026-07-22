@@ -3,6 +3,14 @@
 
 USE cc_shop;
 
+-- ==================== 测试用户 ====================
+-- 密码均为 123456（BCrypt）
+INSERT INTO `user` (`id`, `username`, `password_hash`, `role`) VALUES
+(1, 'admin',    '$2a$10$FS4zJaLG6eJbqquQz4r4QOgSmATE2Yb6bqJioF32rzjqk1E3zR2ii', 2),
+(2, 'testuser1','$2a$10$FS4zJaLG6eJbqquQz4r4QOgSmATE2Yb6bqJioF32rzjqk1E3zR2ii', 2),
+(3, 'testuser3','$2a$10$FS4zJaLG6eJbqquQz4r4QOgSmATE2Yb6bqJioF32rzjqk1E3zR2ii', 1)
+ON DUPLICATE KEY UPDATE role=VALUES(role);
+
 -- ==================== 分类（两级结构）====================
 INSERT INTO `category` (`id`, `name`, `parent_id`, `level`, `sort_order`) VALUES
 (1, '手机数码', 0, 1, 1),
@@ -154,3 +162,12 @@ INSERT INTO `coupon` (`id`, `name`, `type`, `value`, `min_order_amount`, `start_
 (2, '满 500 减 80', 0, 80.00, 500.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 5000, 5000),
 (3, '满 2000 打 85 折', 1, 0.85, 2000.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 2000, 2000),
 (4, '手机数码专属券 满 3000 减 300', 0, 300.00, 3000.00, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 1000, 1000);
+
+-- ==================== 秒杀活动种子 ====================
+INSERT INTO `flash_sale_activity` (`id`, `name`, `start_time`, `end_time`, `status`) VALUES
+(1, '今日秒杀', '2026-01-01 00:00:00', '2026-12-31 23:59:59', 1);
+
+INSERT INTO `flash_sale_item` (`id`, `activity_id`, `product_id`, `sku_id`, `flash_price`, `total_stock`, `available_stock`, `limit_per_user`) VALUES
+(1, 1, 10, 28, 999.00, 100, 100, 1),
+(2, 1, 2, 7, 1299.00, 50, 50, 1),
+(3, 1, 6, 16, 599.00, 80, 80, 2);

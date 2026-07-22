@@ -15,15 +15,16 @@
        │      │      │      │      │
   ┌────▼──┐ ┌▼──┐ ┌─▼──┐ ┌─▼────┐ ┌▼──────────┐
   │cc-user│ │cc-│ │cc- │ │cc-   │ │cc-promotion│
-  │(8081) │ │pro│ │tra-│ │shop- │ │(8084)      │
+  │(8081) │ │pro│ │tra-│ │shop- │ │(8085)      │
   │       │ │du-│ │de  │ │admin │ │            │
-  │ 已实现 │ │ct │ │(新)│ │(新)  │ │ 优惠券     │
+  │ 已实现 │ │ct │ │(8083)│ │(8086)│ │ 优惠券     │
   │       │ │(已│ │    │ │      │ │ 秒杀       │
   │       │ │实 │ │购物│ │商品  │ │ Redis Lua  │
   └───────┘ │现)│ │车  │ │管理  │ │ MQ 削峰    │
             │   │ │订单│ │订单  │ │            │
             │   │ │支付│ │售后  │ └────────────┘
             │   │ │物流│ │促销  │
+            │   │ │售后│ │Dashboard │
             │   │ └────┘ └──────┘
             └───┘
 ```
@@ -41,7 +42,7 @@
 
 ---
 
-## 阶段 1：购物车 + 优惠券
+## 阶段 1：购物车 + 优惠券 ✅
 
 ### 后端
 
@@ -111,7 +112,7 @@ cc-shop-cloud/cc-promotion/
 
 ---
 
-## 阶段 2：下单 + 支付
+## 阶段 2：下单 + 支付 ✅
 
 ### 后端
 
@@ -175,16 +176,16 @@ cc-trade/.../trade/ 新增：
 
 ### 验证清单
 
-- [ ] 下单：购物车选中 → 下单页 → 选地址 → 选券 → 提交 → 订单生成
-- [ ] 库存扣减：条件更新生效，超卖时下单失败
-- [ ] 优惠券状态：可用→已用
-- [ ] 支付：点击支付 → 3 秒 → 成功/失败 → 订单状态更新
-- [ ] 超时：30 分钟未支付 → 订单自动取消 → 库存回滚
-- [ ] 幂等：重复支付请求不重复扣款
+- [x] 下单：购物车选中 → 下单页 → 选地址 → 选券 → 提交 → 订单生成
+- [x] 库存扣减：条件更新生效，超卖时下单失败
+- [x] 优惠券状态：可用→已用
+- [x] 支付：点击支付 → 3 秒 → 成功/失败 → 订单状态更新
+- [x] 幂等：重复支付请求不重复扣款
+- [ ] 超时：30 分钟未支付 → 订单自动取消 → 库存回滚（无法快速验证，DLX 基础设施已就绪）
 
 ---
 
-## 阶段 3：物流 + 售后 + 秒杀
+## 阶段 3：物流 + 售后 + 秒杀 ✅
 
 ### 后端
 
@@ -197,6 +198,7 @@ cc-trade/.../trade/ 新增：
 │   └── AftersaleController.java
 ├── service/
 │   ├── LogisticsSimulator.java
+│   ├── LogisticsService.java
 │   └── AftersaleService.java
 ├── entity/
 │   ├── LogisticsRecord.java
@@ -206,6 +208,10 @@ cc-trade/.../trade/ 新增：
 │   ├── LogisticsRecordMapper.java
 │   ├── LogisticsStepMapper.java
 │   └── AftersaleRecordMapper.java
+├── dto/
+│   ├── LogisticsVO.java
+│   ├── AftersaleApplyRequest.java
+│   └── AftersaleVO.java
 ```
 
 - 物流模拟器：支付成功后定时任务生成物流步骤（已揽收→运输中→派送中→已签收）
@@ -225,6 +231,10 @@ cc-promotion/.../promotion/ 新增：
 ├── mapper/
 │   ├── FlashSaleActivityMapper.java
 │   └── FlashSaleItemMapper.java
+├── dto/
+│   └── FlashSaleVO.java
+├── feign/
+│   └── ProductClient.java
 ```
 
 - 秒杀流程：
@@ -242,14 +252,14 @@ cc-promotion/.../promotion/ 新增：
 
 ### 验证清单
 
-- [ ] 物流：支付完成后物流时间线逐步推进
-- [ ] 售后：提交申请 → 状态流转正常
-- [ ] 秒杀：倒计时 → 抢购 → Lua 原子扣库存 → 限购 → 订单生成
-- [ ] Sentinel：抢购接口限流生效
+- [x] 物流：支付完成后物流时间线逐步推进
+- [x] 售后：提交申请 → 状态流转正常
+- [x] 秒杀：倒计时 → 抢购 → Lua 原子扣库存 → 限购 → 订单生成
+- [ ] Sentinel：抢购接口限流生效（使用现有Gateway全局限流）
 
 ---
 
-## 阶段 4：Admin 后台
+## 阶段 4：Admin 后台 ✅
 
 ### 后端
 
@@ -259,41 +269,49 @@ cc-shop-cloud/cc-shop-admin/
 ├── src/main/java/com/ccshop/admin/
 │   ├── AdminApplication.java
 │   ├── controller/
+│   │   ├── DashboardController.java       # 仪表盘统计
+│   │   ├── AdminAuthController.java       # 管理员登录
 │   │   ├── AdminProductController.java    # 商品 CRUD（含 SKU 编辑）
 │   │   ├── AdminOrderController.java      # 订单管理
 │   │   ├── AdminAftersaleController.java  # 售后审批
-│   │   ├── AdminPromotionController.java  # 促销/优惠券管理
-│   │   ├── AdminUserController.java       # 用户列表（只读）
-│   │   └── AdminMessageController.java    # 消息列表（只读）
+│   │   ├── AdminCouponController.java     # 优惠券管理
+│   │   └── AdminCustomerController.java   # 客户管理
 │   ├── service/
+│   │   ├── DashboardService.java
 │   │   ├── AdminProductService.java
 │   │   ├── AdminOrderService.java
 │   │   ├── AdminAftersaleService.java
-│   │   └── AdminPromotionService.java
+│   │   ├── AdminCouponService.java
+│   │   └── AdminCustomerService.java
 │   └── dto/
-│       ├── ProductWithSkusRequest.java
-│       └── AftersaleApprovalRequest.java
-└── src/main/resources/application.yml
+│       └── DashboardVO.java
+└── src/main/resources/
+    └── application.yml
 ```
 
+- 端口：8086
+- Gateway 路由：`/api/admin/**` → `cc-admin`
 - 关键：商品管理含 SKU 编辑器（新增商品时批量添加 SKU）
 - 售后审批：通过/拒绝 + 更新售后状态
 
 ### 前端
 
 独立 Nuxt 项目 `cc-shop-admin/`，路由 `/admin`：
-- Dashboard（统计卡片：订单数、用户数、商品数）
-- 商品管理（列表 + 新增/编辑含 SKU + 下架）
-- 订单管理（列表 + 详情 + 发货）
-- 售后审批（列表 + 通过/拒绝）
-- 促销管理（优惠券模板 + 秒杀活动）
+- `pages/login.vue`：管理员登录
+- `pages/index.vue`：Dashboard（统计卡片：订单数、用户数、商品数）
+- `pages/product/index.vue`：商品管理（列表 + 新增/编辑含 SKU + 下架）
+- `pages/order/index.vue`：订单管理（列表 + 详情 + 发货）
+- `pages/aftersale/index.vue`：售后审批（列表 + 通过/拒绝）
+- `pages/coupon/index.vue`：促销管理（优惠券模板）
+- `pages/customer/index.vue`：客户管理（用户列表 + 详情）
+- `pages/merchant/index.vue`：商家管理
 
 ### 验证清单
 
-- [ ] Admin 登录 → Dashboard 加载
-- [ ] 商品管理：新增商品含 SKU → 编辑 → 下架
-- [ ] 订单管理：查看订单 → 发货
-- [ ] 售后审批：通过 → 状态更新 → 退款
+- [x] Admin 登录 → Dashboard 加载
+- [x] 商品管理：新增商品含 SKU → 编辑 → 下架
+- [x] 订单管理：查看订单 → 发货
+- [x] 售后审批：通过 → 状态更新 → 退款
 
 ---
 
@@ -303,6 +321,7 @@ cc-shop-cloud/cc-shop-admin/
 
 - 前端 `tracker.ts`：采集 view/click/cart/order/favorite/search 事件，批量发送
 - 后端 MQ 批量写入 `user_action_log` 表
+- 已实现：`UserActionEvent.java`（cc-common）、`UserActionLogService.java`（cc-user）
 
 ### 全栈 Docker Compose
 

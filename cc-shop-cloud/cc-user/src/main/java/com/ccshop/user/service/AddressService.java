@@ -68,4 +68,13 @@ public class AddressService {
         target.setIsDefault(1);
         addressMapper.updateById(target);
     }
+
+    /** 单条查询（供交易服务 Feign 调用） */
+    public Address getById(Long id) {
+        Address a = addressMapper.selectById(id);
+        if (a == null || !a.getUserId().equals(UserContext.getUserId())) {
+            throw new BusinessException(400, "地址不存在");
+        }
+        return a;
+    }
 }

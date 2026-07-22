@@ -25,6 +25,13 @@ public class UserContextInterceptor implements HandlerInterceptor {
         if (name != null) {
             UserContext.setUsername(name);
         }
+        String role = request.getHeader(Constants.HEADER_ROLE);
+        if (role != null && !role.isEmpty()) {
+            try {
+                UserContext.setRole(Integer.valueOf(role));
+            } catch (NumberFormatException ignore) {
+            }
+        }
         return true;
     }
 

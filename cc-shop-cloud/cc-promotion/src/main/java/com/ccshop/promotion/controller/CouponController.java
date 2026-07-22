@@ -23,7 +23,8 @@ public class CouponController {
     @GetMapping("/available")
     @Operation(summary = "可领取优惠券列表")
     public Result<List<CouponVO>> available() {
-        return Result.success(couponService.getAvailable());
+        Long userId = UserContext.getUserId();
+        return Result.success(couponService.getAvailable(userId));
     }
 
     @PostMapping("/receive/{couponId}")
