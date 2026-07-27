@@ -39,10 +39,8 @@ export function useChat() {
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const response = await fetch(
-        `${config.public.apiBase}/api/ai/chat/stream?message=${encodeURIComponent(content.trim())}`,
-        { headers }
-      )
+      const url = `${config.public.apiBase}/api/ai/chat/stream?message=${encodeURIComponent(content.trim())}`
+      const response = await fetch(url, { headers })
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
@@ -52,20 +50,39 @@ export function useChat() {
       if (!reader) throw new Error('无法读取响应流')
 
       const decoder = new TextDecoder()
+      let buffer = '' // 跨 chunk 累积未处理的文本
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
+        buffer += decoder.decode(value, { stream: true })
 
-        // 解析 SSE 格式
-        const lines = chunk.split('\n')
-        for (const line of lines) {
+        // 按双换行拆分 SSE 事件
+        const events = buffer.split('\n\n')
+        // 最后一个可能是不完整的，保留在 buffer 中
+        buffer = events.pop() || ''
+
+        for (const event of events) {
+          // 每个事件可能有多行，取 data: 行
+          for (const line of event.split('\n')) {
+            if (line.startsWith('data:')) {
+              const data = line.substring(5).trim()
+              if (data === '[DONE]') continue
+              if (data) {
+                aiMessage.content += data
+              }
+            }
+          }
+        }
+      }
+
+      // 处理 buffer 中残留的最后一个事件
+      if (buffer.trim()) {
+        for (const line of buffer.split('\n')) {
           if (line.startsWith('data:')) {
             const data = line.substring(5).trim()
-            if (data === '[DONE]') continue
-            if (data) {
+            if (data !== '[DONE]' && data) {
               aiMessage.content += data
             }
           }

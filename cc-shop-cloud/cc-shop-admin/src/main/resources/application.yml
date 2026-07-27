@@ -1,6 +1,10 @@
 server:
   port: 8086
   shutdown: graceful
+  servlet:
+    encoding:
+      charset: utf-8
+      force: true
 
 spring:
   lifecycle:

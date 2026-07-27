@@ -217,7 +217,7 @@ services:
       - cc-product
     environment:
       NACOS_ADDR: nacos:8848
-      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
     ports:
       - "8087:8087"
 
@@ -231,7 +231,7 @@ services:
     depends_on:
       - cc-gateway
     environment:
-      NUXT_PUBLIC_API_BASE: http://cc-gateway:8080
+      NUXT_PUBLIC_API_BASE: http://localhost:8080
     ports:
       - "3000:3000"
 
@@ -244,7 +244,7 @@ services:
     depends_on:
       - cc-gateway
     environment:
-      NUXT_PUBLIC_API_BASE: http://cc-gateway:8080
+      NUXT_PUBLIC_API_BASE: http://localhost:8080
     ports:
       - "3001:3000"
 
