@@ -39,8 +39,7 @@ Desktop.ini
 docker-compose.override.yml
 
 # === Claude ===
-.claude/settings.local.json
-.claude/worktrees/
+.claude/
 
 # === Project specific ===
 cc-shop-cloud/**/target/

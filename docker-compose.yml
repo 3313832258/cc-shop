@@ -15,10 +15,10 @@ services:
     container_name: cc-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Root@2026!}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_root_password}
       MYSQL_DATABASE: cc_shop
       MYSQL_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
     command: >
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
@@ -38,13 +38,13 @@ services:
     image: redis:7
     container_name: cc-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CcShop@2026!}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-your_password}
     ports:
       - "6379:6379"
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-CcShop@2026!}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-your_password}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,7 +55,7 @@ services:
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ccshop}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-your_password}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -76,7 +76,7 @@ services:
       MYSQL_SERVICE_PORT: "3306"
       MYSQL_SERVICE_DB_NAME: nacos
       MYSQL_SERVICE_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-CcShop@2026!}
+      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-your_password}
     ports:
       - "8848:8848"
       - "9848:9848"
@@ -95,9 +95,9 @@ services:
       - redis
     environment:
       NACOS_ADDR: nacos:8848
-      JWT_SECRET: ${JWT_SECRET:-ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_change_in_prod}
       REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-your_password}
     ports:
       - "8080:8080"
 
@@ -117,13 +117,13 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
       REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-your_password}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
-      JWT_SECRET: ${JWT_SECRET:-ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-your_password}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_key_change_in_prod}
 
   cc-product:
     build:
@@ -140,9 +140,9 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
       REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-your_password}
 
   cc-trade:
     build:
@@ -160,12 +160,12 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
       REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-your_password}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-your_password}
 
   cc-promotion:
     build:
@@ -183,12 +183,12 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
       REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-CcShop@2026!}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-your_password}
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-ccshop}
-      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-your_password}
 
   cc-admin:
     build:
@@ -204,7 +204,7 @@ services:
       MYSQL_HOST: mysql
       MYSQL_PORT: "3306"
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
 
   cc-ai:
     build:

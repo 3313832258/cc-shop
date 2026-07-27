@@ -16,7 +16,7 @@ spring:
     hikari:
       connection-init-sql: SET NAMES utf8mb4
     username: ${MYSQL_APP_USER:ccshop}
-    password: ${MYSQL_APP_PASSWORD:CcShop@2026!}
+    password: ${MYSQL_APP_PASSWORD:your_password}
     driver-class-name: com.mysql.cj.jdbc.Driver
   cloud:
     nacos:

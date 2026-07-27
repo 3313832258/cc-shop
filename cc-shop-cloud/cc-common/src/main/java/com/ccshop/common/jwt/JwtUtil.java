@@ -20,7 +20,7 @@ public class JwtUtil {
      */
     private static final String SECRET = System.getenv("JWT_SECRET") != null
             ? System.getenv("JWT_SECRET")
-            : System.getProperty("jwt.secret", "ccshop-secret-key-for-jwt-signing-please-change-in-prod-2026");
+            : System.getProperty("jwt.secret", "your_jwt_secret_key_change_in_prod");
 
     /** AccessToken 有效期 2 小时 */
     public static final long ACCESS_EXPIRATION_MS = 2L * 60 * 60 * 1000;

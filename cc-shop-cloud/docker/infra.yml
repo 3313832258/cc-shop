@@ -16,10 +16,10 @@ services:
     container_name: cc-mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Root@2026!}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_root_password}
       MYSQL_DATABASE: cc_shop
       MYSQL_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:-your_password}
       TZ: Asia/Shanghai
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
@@ -41,7 +41,7 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-CcShop@2026!}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-your_password}
     volumes:
       - redis-data:/data
 
@@ -51,7 +51,7 @@ services:
     restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-ccshop}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-CcShop@2026!}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-your_password}
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -72,7 +72,7 @@ services:
       MYSQL_SERVICE_PORT: "3306"
       MYSQL_SERVICE_DB_NAME: nacos
       MYSQL_SERVICE_USER: ${MYSQL_APP_USER:-ccshop}
-      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-CcShop@2026!}
+      MYSQL_SERVICE_PASSWORD: ${NACOS_DB_PASSWORD:-your_password}
       MYSQL_SERVICE_DB_PARAM: "characterEncoding=utf8&connectTimeout=10000&socketTimeout=30000&autoReconnect=true&useSSL=false&allowPublicKeyRetrieval=true"
       JVM_XMS: "512m"
       JVM_XMX: "512m"
