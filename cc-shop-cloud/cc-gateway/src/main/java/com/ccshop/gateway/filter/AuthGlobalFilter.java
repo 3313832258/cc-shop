@@ -44,6 +44,8 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             "/api/product/list",
             "/api/product/search",
             "/api/admin/auth/login",
+            "/api/ai/chat",
+            "/api/ai/chat/stream",
             "/actuator/health"
     );
 

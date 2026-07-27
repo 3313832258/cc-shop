@@ -206,6 +206,21 @@ services:
       MYSQL_APP_USER: ${MYSQL_APP_USER:-ccshop}
       MYSQL_APP_PASSWORD: ${MYSQL_APP_PASSWORD:-CcShop@2026!}
 
+  cc-ai:
+    build:
+      context: ./cc-shop-cloud
+      dockerfile: Dockerfile.ai
+    container_name: cc-ai
+    restart: unless-stopped
+    depends_on:
+      - nacos
+      - cc-product
+    environment:
+      NACOS_ADDR: nacos:8848
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY:}
+    ports:
+      - "8087:8087"
+
   # ==================== 前端 ====================
   cc-shop-web:
     build:

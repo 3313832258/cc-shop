@@ -58,6 +58,14 @@ spring:
           filters:
             - StripPrefix=1
 
+        # AI 智能客服
+        - id: cc-ai
+          uri: lb://cc-ai
+          predicates:
+            - Path=/api/ai/**
+          filters:
+            - StripPrefix=1
+
 # Sentinel 规则（内存模式，生产环境应持久化到 Nacos）
 spring.cloud.sentinel.gateway.api-group:
   - name: user-api
@@ -117,6 +125,12 @@ spring.cloud.sentinel.gateway.api-group:
     rules:
       - resource: /api/admin/**
         count: 100
+        grade: 1
+        limitApp: default
+  - name: ai-api
+    rules:
+      - resource: /api/ai/**
+        count: 20
         grade: 1
         limitApp: default
 

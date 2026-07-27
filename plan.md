@@ -325,10 +325,21 @@ cc-shop-cloud/cc-shop-admin/
 - ✅ Gateway 白名单：`/api/user/action` 无需登录即可上报
 - ✅ 页面埋点：商品详情（view/click/cart/favorite）、商品列表（search）、下单（order）、领券（receive）
 
+### AI 智能客服 ✅
+
+- ✅ 新增 `cc-ai` 微服务（端口 8087）：通义千问 DashScope API 集成
+- ✅ SSE 流式输出：SseEmitter 实现打字机效果，逐字返回 AI 回答
+- ✅ RAG 商品问答：Feign 调用 cc-product 查询商品信息，动态注入 Prompt 上下文
+- ✅ Prompt Engineering：System Prompt 设定客服角色 + 商品上下文模板
+- ✅ Gateway 路由：`/api/ai/**` 路由到 cc-ai，白名单无需登录
+- ✅ Sentinel 限流：AI 接口 20 QPS 限制
+- ✅ 前端 ChatWidget：悬浮聊天窗口组件，支持 SSE 流式显示
+- ✅ Dockerfile.ai + docker-compose.yml 更新
+
 ### 全栈 Docker Compose ✅
 
-- ✅ 根目录 `docker-compose.yml`：一键启动 11 个容器（4 基础设施 + 6 微服务 + 2 前端）
-- ✅ 后端 Dockerfile：6 个微服务独立 Dockerfile（gateway/user/product/trade/promotion/admin）
+- ✅ 根目录 `docker-compose.yml`：一键启动 12 个容器（4 基础设施 + 7 微服务 + 2 前端）
+- ✅ 后端 Dockerfile：7 个微服务独立 Dockerfile（gateway/user/product/trade/promotion/admin/ai）
 - ✅ 前端 Dockerfile：用户端 + 管理后台（Nuxt 3 SSR 模式）
 - ✅ 环境变量配置：`.env.example` 包含所有必要配置
 - ✅ Nuxt 配置：支持 `NUXT_PUBLIC_API_BASE` 环境变量覆盖
@@ -343,7 +354,7 @@ cc-shop-cloud/cc-shop-admin/
 - [x] 物流时间线推进 → 售后申请 → 审批（代码完整，Docker 需重新构建）
 - [x] 秒杀抢购 → 原子扣库存 → 限购生效（FlashSaleService 185行，Lua 脚本就绪）
 - [x] Admin 管理商品/订单/售后（7个 Controller + 6个 Service 完整）
-- [x] Docker 全栈一键起（docker-compose.yml 11 个容器）
+- [x] Docker 全栈一键起（docker-compose.yml 12 个容器）
 
 ---
 

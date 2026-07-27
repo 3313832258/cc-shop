@@ -41,6 +41,7 @@ cc-shop/
 │   ├── cc-trade/               # 交易服务 8083：购物车/订单/支付/物流/售后/MQ消费者
 │   ├── cc-promotion/           # 促销服务 8085：优惠券/秒杀/MQ消费者
 │   ├── cc-shop-admin/          # 管理后台 8086：Dashboard/商品管理/订单管理/售后审批/优惠券管理/客户管理
+│   ├── cc-ai/                  # AI 智能客服 8087：通义千问 LLM + RAG 商品问答 + SSE 流式
 │   └── docker/
 │       ├── infra.yml            # Docker Compose：MySQL + Redis + RabbitMQ + Nacos + Seata
 │       └── mysql/init/          # 初始化 SQL
@@ -88,6 +89,7 @@ cd cc-product && mvn spring-boot:run     # → :8082
 cd cc-trade && mvn spring-boot:run       # → :8083
 cd cc-promotion && mvn spring-boot:run   # → :8085
 cd cc-shop-admin && mvn spring-boot:run  # → :8086
+cd cc-ai && mvn spring-boot:run          # → :8087
 ```
 
 ### 前端
@@ -125,6 +127,7 @@ tskill <PID>
 | `/api/trade/**` | `cc-trade` | 8083 |
 | `/api/promotion/**` | `cc-promotion` | 8085 |
 | `/api/admin/**` | `cc-admin` | 8086 |
+| `/api/ai/**` | `cc-ai` | 8087 |
 
 Gateway 使用 `StripPrefix=1`，即 `/api/trade/cart/list` → 路由到 cc-trade 时变为 `/cart/list`。
 

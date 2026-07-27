@@ -19,6 +19,7 @@
         <module>cc-trade</module>
         <module>cc-promotion</module>
         <module>cc-shop-admin</module>
+        <module>cc-ai</module>
     </modules>
 
     <parent>
